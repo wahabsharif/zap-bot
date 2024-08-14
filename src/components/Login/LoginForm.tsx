@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import axios from "axios"; // Import axios for making HTTP requests
 
 export default function LoginForm() {
   const [email, setEmail] = useState("");
@@ -31,40 +32,46 @@ export default function LoginForm() {
     }
 
     try {
-      // Simulate API call for login
-      // Replace this with your actual API call
-      console.log("Email:", email, "Password:", password);
+      // Make the API call to login
+      const response = await axios.post("/api/users?action=login", {
+        email,
+        password,
+      });
 
-      // Simulate response from the API
-      const simulatedResponse = {
-        email: "admin@example.com",
-        isAdmin: true, // This should come from your API response
-      };
+      const { token, isAdmin } = response.data;
 
-      console.log("Simulated Response:", simulatedResponse); // Debug logging
+      // Store the token if needed (e.g., in localStorage or state)
+      // localStorage.setItem('token', token);
 
-      setIsAdmin(simulatedResponse.isAdmin);
+      setIsAdmin(isAdmin);
 
-      if (simulatedResponse.isAdmin) {
+      if (isAdmin) {
         router.push("/admin");
       } else {
         router.push("/bot");
       }
     } catch (err) {
-      if (err instanceof Error) {
-        setError(err.message || "An error occurred");
-      } else {
-        setError("An unexpected error occurred");
+      let errorMessage = "An unexpected error occurred";
+      if (axios.isAxiosError(err)) {
+        // If the error is an Axios error, we can safely access err.response
+        if (err.response) {
+          errorMessage = err.response.data.message || "An error occurred";
+        }
+      } else if (err instanceof Error) {
+        // For non-Axios errors, use the standard Error message
+        errorMessage = err.message || "An error occurred";
       }
+
+      setError(errorMessage);
     } finally {
       setLoading(false);
     }
   };
 
   return (
-    <div className="flex items-center justify-center min-h-screen bg-gray-100">
-      <div className="w-full max-w-md p-8 space-y-6 bg-white shadow-md rounded-lg">
-        <h2 className="text-2xl font-bold text-center text-gray-900">
+    <div className="flex items-center justify-center min-h-screen">
+      <div className="relative w-full max-w-md p-8 space-y-6 bg-black bg-opacity-30 backdrop-blur-md shadow-lg rounded-3xl">
+        <h2 className="text-3xl font-bold text-center text-gray-200">
           Sign in to your account
         </h2>
         <form className="space-y-6" onSubmit={handleSubmit}>
@@ -76,7 +83,7 @@ export default function LoginForm() {
           <div>
             <label
               htmlFor="email"
-              className="block text-sm font-medium text-gray-700"
+              className="block text-lg font-semibold text-gray-200"
             >
               Email address
             </label>
@@ -93,7 +100,7 @@ export default function LoginForm() {
           <div>
             <label
               htmlFor="password"
-              className="block text-sm font-medium text-gray-700"
+              className="block text-lg font-semibold text-gray-200"
             >
               Password
             </label>
@@ -107,11 +114,11 @@ export default function LoginForm() {
               className="w-full px-3 py-2 mt-1 border text-black border-gray-300 rounded-lg shadow-sm focus:ring-indigo-500 focus:border-indigo-500"
             />
           </div>
-          <div>
+          <div className="flex items-center justify-center h-full">
             <button
               type="submit"
               disabled={loading}
-              className={`w-full px-4 py-2 font-medium text-white bg-indigo-600 rounded-lg hover:bg-indigo-700 focus:ring-2 focus:ring-indigo-500 ${
+              className={`px-4 py-2 font-semibold text-gray-200 bg-indigo-600 rounded-lg hover:bg-indigo-700 focus:ring-2 focus:ring-indigo-500 ${
                 loading ? "opacity-50 cursor-not-allowed" : ""
               }`}
             >
