@@ -33,34 +33,40 @@ export const registerUser = async (req: Request, res: Response) => {
 };
 
 // Login a user
-export const loginUser = async (req: Request, res: Response) => {
+export async function loginUser(req: Request, res: Response) {
   try {
     const { email, password } = req.body;
 
-    // Find the user by email
-    const user = await User.findOne({ email });
-    if (!user) {
-      return res.status(400).json({ message: "Invalid credentials" });
+    // Validate user input
+    if (!email || !password) {
+      return res
+        .status(400)
+        .json({ message: "Email and password are required" });
     }
 
-    // Compare passwords
-    const isMatch = await bcrypt.compare(password, user.password);
-    if (!isMatch) {
-      return res.status(400).json({ message: "Invalid credentials" });
+    // Find user
+    const user = await User.findOne({ email });
+    if (!user || !(await user.comparePassword(password))) {
+      return res.status(401).json({ message: "Invalid email or password" });
     }
 
     // Generate JWT
     const token = jwt.sign(
       { userId: user._id, isAdmin: user.isAdmin },
-      process.env.JWT_SECRET || "secret",
+      process.env.JWT_SECRET || "your_jwt_secret",
       { expiresIn: "1h" }
     );
 
-    res.status(200).json({ token });
+    return res.status(200).json({
+      message: "Login successful",
+      token,
+      isAdmin: user.isAdmin,
+    });
   } catch (error) {
-    res.status(500).json({ message: "Server error", error });
+    console.error("Error in loginUser:", error);
+    return res.status(500).json({ message: "Server error", error });
   }
-};
+}
 
 // Check if user is admin
 export async function checkAdmin(req: Request, res: Response) {
