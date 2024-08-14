@@ -1,40 +1,61 @@
 "use client";
-import { useRouter } from "next/navigation";
+
 import { useState } from "react";
+import { useRouter } from "next/navigation";
 
-const authenticateUser = async (email: string, password: string) => {
-  // Mock API call for authentication
-  return new Promise((resolve, reject) => {
-    setTimeout(() => {
-      if (email === "user@example.com" && password === "password123") {
-        resolve("Authenticated");
-      } else {
-        reject("Invalid credentials");
-      }
-    }, 1000);
-  });
-};
-
-export default function LoginPage() {
-  const router = useRouter();
+export default function LoginForm() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
+  const [isAdmin, setIsAdmin] = useState(false); // This will be set based on API response
+  const router = useRouter();
+
+  const validateForm = () => {
+    if (!email || !password) {
+      setError("Email and password are required.");
+      return false;
+    }
+    // Additional validation logic can go here
+    return true;
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
     setError(null);
 
-    try {
-      // Simulate authentication API call
-      await authenticateUser(email, password);
+    if (!validateForm()) {
+      setLoading(false);
+      return;
+    }
 
-      // On success, redirect to the dashboard or another page
-      router.push("/");
+    try {
+      // Simulate API call for login
+      // Replace this with your actual API call
+      console.log("Email:", email, "Password:", password);
+
+      // Simulate response from the API
+      const simulatedResponse = {
+        email: "admin@example.com",
+        isAdmin: true, // This should come from your API response
+      };
+
+      console.log("Simulated Response:", simulatedResponse); // Debug logging
+
+      setIsAdmin(simulatedResponse.isAdmin);
+
+      if (simulatedResponse.isAdmin) {
+        router.push("/admin");
+      } else {
+        router.push("/bot");
+      }
     } catch (err) {
-      setError(err as string);
+      if (err instanceof Error) {
+        setError(err.message || "An error occurred");
+      } else {
+        setError("An unexpected error occurred");
+      }
     } finally {
       setLoading(false);
     }
@@ -66,7 +87,7 @@ export default function LoginPage() {
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               required
-              className="w-full px-3 py-2 mt-1 border border-gray-300 rounded-lg shadow-sm focus:ring-indigo-500 focus:border-indigo-500"
+              className="w-full px-3 py-2 mt-1 border text-black border-gray-300 rounded-lg shadow-sm focus:ring-indigo-500 focus:border-indigo-500"
             />
           </div>
           <div>
@@ -83,7 +104,7 @@ export default function LoginPage() {
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               required
-              className="w-full px-3 py-2 mt-1 border border-gray-300 rounded-lg shadow-sm focus:ring-indigo-500 focus:border-indigo-500"
+              className="w-full px-3 py-2 mt-1 border text-black border-gray-300 rounded-lg shadow-sm focus:ring-indigo-500 focus:border-indigo-500"
             />
           </div>
           <div>

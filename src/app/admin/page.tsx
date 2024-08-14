@@ -1,9 +1,9 @@
-import Image from "next/image";
+import SideBar from "@/components/admin/SideBar";
 
-export default function Home() {
+export default function LoginPage() {
   return (
     <>
-      <h1>Admin Dashboard</h1>
+      <SideBar />
     </>
   );
 }
