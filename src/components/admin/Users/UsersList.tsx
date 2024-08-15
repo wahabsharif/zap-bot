@@ -60,67 +60,69 @@ const UsersList: React.FC<UsersListProps> = ({ users, error, fetchUsers }) => {
     <div className="w-full p-4 border border-gray-800 rounded-3xl shadow-lg bg-black/30 backdrop-blur-lg backdrop-filter">
       <h2 className="text-2xl font-bold mb-4 text-center">Users List</h2>
       {error && <p className="text-red-500">{error}</p>}
-      <table className="min-w-full divide-y divide-gray-200">
-        <thead>
-          <tr>
-            <th className="px-6 py-3 text-left text-xs font-medium text-gray-200 uppercase tracking-wider">
-              Username
-            </th>
-            <th className="px-6 py-3 text-left text-xs font-medium text-gray-200 uppercase tracking-wider">
-              Email
-            </th>
-            <th className="px-6 py-3 text-left text-xs font-medium text-gray-200 uppercase tracking-wider">
-              Admin
-            </th>
-            <th className="px-6 py-3 text-left text-xs font-medium text-gray-200 uppercase tracking-wider">
-              Status
-            </th>
-            <th className="px-6 py-3 text-left text-xs font-medium text-gray-200 uppercase tracking-wider">
-              Last Login
-            </th>
-            <th
-              onClick={handleSort}
-              className="px-6 py-3 text-left text-xs font-medium text-gray-200 uppercase tracking-wider cursor-pointer"
-            >
-              Created At {sortOrder === "asc" ? "▲" : "▼"}
-            </th>
-            <th className="px-6 py-3 text-left text-xs font-medium text-gray-200 uppercase tracking-wider">
-              Actions
-            </th>
-          </tr>
-        </thead>
-        <tbody className="divide-y divide-gray-200">
-          {sortedUsers.map((user) => (
-            <tr key={user._id}>
-              <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-200">
-                {user.username}
-              </td>
-              <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-200">
-                {user.email}
-              </td>
-              <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-200">
-                {user.isAdmin ? "Yes" : "No"}
-              </td>
-              <td
-                className={`px-6 py-4 whitespace-nowrap text-sm font-medium ${user.isOnline ? "text-green-500" : "text-red-500"}`}
+      <div className="overflow-x-auto">
+        <table className="min-w-full divide-y divide-gray-200">
+          <thead>
+            <tr>
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-200 uppercase tracking-wider">
+                Username
+              </th>
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-200 uppercase tracking-wider">
+                Email
+              </th>
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-200 uppercase tracking-wider">
+                Admin
+              </th>
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-200 uppercase tracking-wider">
+                Status
+              </th>
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-200 uppercase tracking-wider">
+                Last Login
+              </th>
+              <th
+                onClick={handleSort}
+                className="px-6 py-3 text-left text-xs font-medium text-gray-200 uppercase tracking-wider cursor-pointer"
               >
-                {user.isOnline ? "Online" : "Offline"}
-              </td>
-              <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-200">
-                {user.lastLogin
-                  ? `${formatDate(user.lastLogin)} ${formatTime(user.lastLogin)}`
-                  : "Never"}
-              </td>
-              <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-200">
-                {formatDate(user.createdAt)} {formatTime(user.createdAt)}
-              </td>
-              <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                <DeleteUserButton userId={user._id} onSuccess={fetchUsers} />
-              </td>
+                Created At {sortOrder === "asc" ? "▲" : "▼"}
+              </th>
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-200 uppercase tracking-wider">
+                Actions
+              </th>
             </tr>
-          ))}
-        </tbody>
-      </table>
+          </thead>
+          <tbody className="divide-y divide-gray-200">
+            {sortedUsers.map((user) => (
+              <tr key={user._id}>
+                <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-200">
+                  {user.username}
+                </td>
+                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-200">
+                  {user.email}
+                </td>
+                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-200">
+                  {user.isAdmin ? "Yes" : "No"}
+                </td>
+                <td
+                  className={`px-6 py-4 whitespace-nowrap text-sm font-medium ${user.isOnline ? "text-green-500" : "text-red-500"}`}
+                >
+                  {user.isOnline ? "Online" : "Offline"}
+                </td>
+                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-200">
+                  {user.lastLogin
+                    ? `${formatDate(user.lastLogin)} ${formatTime(user.lastLogin)}`
+                    : "Never"}
+                </td>
+                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-200">
+                  {formatDate(user.createdAt)} {formatTime(user.createdAt)}
+                </td>
+                <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                  <DeleteUserButton userId={user._id} onSuccess={fetchUsers} />
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
     </div>
   );
 };

@@ -1,5 +1,4 @@
-// src/main.js
-const { app, BrowserWindow } = require("electron");
+const { app, BrowserWindow, Menu } = require("electron");
 const path = require("path");
 
 function createWindow() {
@@ -11,9 +10,13 @@ function createWindow() {
       contextIsolation: true,
       nodeIntegration: false,
     },
+    icon: path.join(__dirname, "../src/assets/logos/zap-bot-icon.ico"), // Path to your icon file
   });
 
   mainWindow.loadURL("http://localhost:3000"); // URL where Next.js app is served
+
+  // UnComment the Bellow To Remove the Default Menu Bar
+  // Menu.setApplicationMenu(null);
 }
 
 app.whenReady().then(() => {

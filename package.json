@@ -3,11 +3,12 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "dev": "next dev",
+    "dev": "concurrently \"next dev\" \"wait-on http://localhost:3000 && electron ./src/main.js\"",
     "build": "next build",
+    "web": "next dev",
     "start": "next start",
     "lint": "next lint",
-    "electron": "concurrently \"next dev\" \"electron ./src/main.js\"",
+    "electron": "concurrently \"next dev\" \"wait-on http://localhost:3000 && electron ./src/main.js\"",
     "build:electron": "next build && electron-builder"
   },
   "dependencies": {
@@ -51,5 +52,24 @@
     "tailwindcss": "^3.4.10",
     "ts-node": "^10.9.2",
     "typescript": "^5.5.4"
+  },
+  "build": {
+    "appId": "com.yourcompany.zapbot",
+    "productName": "Zap Bot",
+    "files": [
+      "out/",
+      "src/main.js",
+      "src/preload.js"
+    ],
+    "icon": "src/assets/logos/zap-bot-icon.ico",
+    "mac": {
+      "icon": "src/assets/logos/zap-bot-icon.ico"
+    },
+    "win": {
+      "icon": "src/assets/logos/zap-bot-icon.ico"
+    },
+    "linux": {
+      "icon": "src/assets/logos/zap-bot-icon.ico"
+    }
   }
 }
