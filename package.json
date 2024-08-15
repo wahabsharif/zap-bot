@@ -21,6 +21,7 @@
     "axios": "^1.7.4",
     "bcrypt": "^5.1.1",
     "dotenv": "^16.4.5",
+    "electron-reload": "^2.0.0-alpha.1",
     "express": "^4.19.2",
     "glob": "^9.3.5",
     "jsonwebtoken": "^9.0.2",
@@ -32,14 +33,17 @@
     "react": "^18.3.1",
     "react-dom": "^18.3.1",
     "react-icons": "^5.3.0",
-    "rimraf": "^4.4.1"
+    "rimraf": "^4.4.1",
+    "selenium-webdriver": "^4.23.0"
   },
   "devDependencies": {
     "@types/bcrypt": "^5.0.2",
     "@types/jsonwebtoken": "^9.0.6",
     "@types/node": "^22.3.0",
+    "@types/puppeteer": "^7.0.4",
     "@types/react": "^18.3.3",
     "@types/react-dom": "^18",
+    "@types/selenium-webdriver": "^4.1.25",
     "@typescript-eslint/eslint-plugin": "^8.1.0",
     "@typescript-eslint/parser": "^8.1.0",
     "concurrently": "^8.2.2",

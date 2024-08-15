@@ -1,5 +1,6 @@
 import React from "react";
 import { MdSpaceDashboard, MdLogout } from "react-icons/md";
+import { FaRobot } from "react-icons/fa";
 import { FaInbox, FaUsers } from "react-icons/fa6";
 import Link from "next/link";
 import LogoutButton from "../admin/Users/LogoutButton";
@@ -29,6 +30,15 @@ function SideBar() {
             >
               <FaInbox className="flex-shrink-0 w-5 h-5 text-gray-500 transition duration-75 dark:text-gray-400 group-hover:text-gray-900 dark:group-hover:text-white" />
               <span className="flex-1 ms-3 whitespace-nowrap">Inbox</span>
+            </Link>
+          </li>
+          <li>
+            <Link
+              href="/bot"
+              className="flex items-center p-2 text-gray-900 rounded-lg dark:text-white hover:bg-gray-100 dark:hover:bg-gray-700 group"
+            >
+              <FaRobot className="flex-shrink-0 w-5 h-5 text-gray-500 transition duration-75 dark:text-gray-400 group-hover:text-gray-900 dark:group-hover:text-white" />
+              <span className="flex-1 ms-3 whitespace-nowrap">Bot</span>
             </Link>
           </li>
           <li>

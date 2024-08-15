@@ -1,6 +1,7 @@
-// src/preload.js
-const { contextBridge } = require("electron");
+const { contextBridge, ipcRenderer } = require("electron");
 
 contextBridge.exposeInMainWorld("electron", {
-  // Define methods that can be exposed to the renderer process
+  handleMessage: (channel, func) =>
+    ipcRenderer.on(channel, (event, ...args) => func(...args)),
+  sendMessage: (channel, data) => ipcRenderer.send(channel, data),
 });
