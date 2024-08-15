@@ -15,7 +15,8 @@ function createWindow() {
 
   mainWindow.loadURL("http://localhost:3000"); // URL where Next.js app is served
 
-  // UnComment the Bellow To Remove the Default Menu Bar
+  // UnComment the Bellow Line To Remove the Default Menu Bar
+
   // Menu.setApplicationMenu(null);
 }
 
