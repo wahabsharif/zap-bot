@@ -16,7 +16,7 @@ export default function AdminLayout({
   return (
     <div className={`${inter.className} flex`}>
       <SideBar />
-      <main className="ml-64 flex-1 p-4 overflow-y-auto">{children}</main>
+      <main className="ml-60 flex-1 p-4 overflow-y-auto">{children}</main>
     </div>
   );
 }

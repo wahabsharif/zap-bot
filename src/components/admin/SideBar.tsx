@@ -8,10 +8,10 @@ function SideBar() {
   return (
     <aside
       id="sidebar-multi-level-sidebar"
-      className="fixed top-0 left-0 z-40 w-64 h-screen transition-transform -translate-x-full sm:translate-x-0"
+      className="fixed top-0 left-0 z-40 w-56 h-screen transition-transform -translate-x-full sm:translate-x-0 rounded-r-3xl"
       aria-label="Sidebar"
     >
-      <div className="h-full px-3 py-4 overflow-y-auto bg-gray-50 dark:bg-gray-800 flex flex-col">
+      <div className="h-full px-3 py-4 overflow-y-auto bg-gray-50 bg-opacity-30 dark:bg-gray-800 dark:bg-opacity-50 backdrop-blur-md flex flex-col">
         <ul className="space-y-2 font-medium flex-1">
           <li>
             <Link
