@@ -1,3 +1,5 @@
+// src/models/User.ts
+
 import mongoose, { Schema, Document } from "mongoose";
 import bcrypt from "bcrypt";
 
@@ -6,6 +8,8 @@ interface IUser extends Document {
   username: string;
   password: string;
   isAdmin: boolean;
+  isOnline: boolean;
+  lastLogin: Date;
   comparePassword(candidatePassword: string): Promise<boolean>;
 }
 
@@ -27,6 +31,13 @@ const UserSchema: Schema<IUser> = new Schema({
   isAdmin: {
     type: Boolean,
     default: false,
+  },
+  isOnline: {
+    type: Boolean,
+    default: false,
+  },
+  lastLogin: {
+    type: Date,
   },
 });
 

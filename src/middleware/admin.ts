@@ -1,5 +1,5 @@
 import { NextApiRequest, NextApiResponse } from "next";
-import authenticate from "./auth";
+import { authenticate } from "./auth";
 
 const isAdmin =
   (handler: (req: NextApiRequest, res: NextApiResponse) => void) =>
