@@ -1,5 +1,3 @@
-// src/models/User.ts
-
 import mongoose, { Schema, Document } from "mongoose";
 import bcrypt from "bcrypt";
 
@@ -10,6 +8,7 @@ interface IUser extends Document {
   isAdmin: boolean;
   isOnline: boolean;
   lastLogin: Date;
+  createdAt: Date; // Added createdAt field
   comparePassword(candidatePassword: string): Promise<boolean>;
 }
 
@@ -38,6 +37,10 @@ const UserSchema: Schema<IUser> = new Schema({
   },
   lastLogin: {
     type: Date,
+  },
+  createdAt: {
+    type: Date,
+    default: Date.now, // Automatically set creation date
   },
 });
 

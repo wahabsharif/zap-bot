@@ -2,14 +2,14 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import axios from "axios"; // Import axios for making HTTP requests
+import axios from "axios";
 
 export default function LoginForm() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
-  const [isAdmin, setIsAdmin] = useState(false); // This will be set based on API response
+  const [isAdmin, setIsAdmin] = useState(false);
   const router = useRouter();
 
   const validateForm = () => {
@@ -17,7 +17,6 @@ export default function LoginForm() {
       setError("Email and password are required.");
       return false;
     }
-    // Additional validation logic can go here
     return true;
   };
 
@@ -32,18 +31,16 @@ export default function LoginForm() {
     }
 
     try {
-      // Make the API call to login
       const response = await axios.post("/api/users?action=login", {
         email,
         password,
       });
 
-      const { token, isAdmin } = response.data;
+      const { token, userId, isAdmin } = response.data;
 
-      // Store the token if needed (e.g., in localStorage or state)
-      // localStorage.setItem('token', token);
-
-      setIsAdmin(isAdmin);
+      localStorage.setItem("token", token);
+      localStorage.setItem("userId", userId); // Store userId in localStorage
+      localStorage.setItem("isAdmin", isAdmin);
 
       if (isAdmin) {
         router.push("/admin");
@@ -53,12 +50,10 @@ export default function LoginForm() {
     } catch (err) {
       let errorMessage = "An unexpected error occurred";
       if (axios.isAxiosError(err)) {
-        // If the error is an Axios error, we can safely access err.response
         if (err.response) {
           errorMessage = err.response.data.message || "An error occurred";
         }
       } else if (err instanceof Error) {
-        // For non-Axios errors, use the standard Error message
         errorMessage = err.message || "An error occurred";
       }
 

@@ -34,7 +34,7 @@ export const registerUser = async (req: Request, res: Response) => {
   }
 };
 
-// src/controllers/userController.ts
+// Login A User
 export const loginUser = async (req: Request, res: Response) => {
   try {
     const { email, password } = req.body;
@@ -121,7 +121,8 @@ export const checkAdmin = async (req: Request, res: Response) => {
 // Get all users
 export const getAllUsers = async (req: Request, res: Response) => {
   try {
-    const users = await User.find({});
+    const sortOrder = req.query.sortOrder === "asc" ? 1 : -1; // Default to descending
+    const users = await User.find({}).sort({ createdAt: sortOrder }); // Sort by createdAt
     res.status(200).json(
       users.map((user) => ({
         ...user.toObject(),

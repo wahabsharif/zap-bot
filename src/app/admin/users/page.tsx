@@ -3,13 +3,16 @@
 import React, { useEffect, useState } from "react";
 import axios from "axios";
 import UsersList from "../../../components/admin/Users/UsersList";
-import UserForm from "../../../components/admin/Users/UserForm";
+import AddUserForm from "../../../components/admin/Users/AddUserForm";
 
 interface User {
   _id: string;
   email: string;
   username: string;
   isAdmin: boolean;
+  isOnline: boolean;
+  lastLogin: Date;
+  createdAt: Date;
 }
 
 export default function UserPage() {
@@ -33,8 +36,8 @@ export default function UserPage() {
 
   return (
     <>
-      <UserForm onSuccess={fetchUsers} />
-      <UsersList users={users} error={error} fetchUsers={fetchUsers} />
+      <AddUserForm onSuccess={fetchUsers} />
+      <UsersList error={error} fetchUsers={fetchUsers} users={users} />
     </>
   );
 }
