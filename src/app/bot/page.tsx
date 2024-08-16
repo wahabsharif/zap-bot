@@ -1,10 +1,8 @@
-import React from "react";
-import LogoutButton from "../../components/admin/Users/LogoutButton";
-import BotController from "@/components/bot/BotController";
-import Logo from "@/assets/logos/zap-bot-logo-landscape-light.svg";
 import devLogo from "@/assets/logos/wahab-sharif-logo.svg";
+import Logo from "@/assets/logos/zap-bot-logo-landscape-light.svg";
+import BotController from "@/components/bot/BotController";
 import Image from "next/image";
-import Link from "next/link";
+import LogoutButton from "../../components/admin/Users/LogoutButton";
 
 export default function BotPage() {
   return (
