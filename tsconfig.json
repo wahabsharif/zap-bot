@@ -27,7 +27,8 @@
     "**/*.tsx",
     ".next/types/**/*.ts",
     "preload.js",
-    "main.js"
+    "main.js",
+    "src/blsAutomation.js"
   ],
   "exclude": ["node_modules"]
 }
