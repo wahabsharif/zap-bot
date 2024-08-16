@@ -2,8 +2,11 @@ const puppeteer = require("puppeteer");
 const Tesseract = require("tesseract.js");
 const Jimp = require("jimp");
 const fs = require("fs");
+const axios = require("axios"); // Add axios to handle HTTP requests
 
-async function preprocessImage(imageBuffer: Buffer) {
+const MAX_RETRIES = 5; // Maximum number of retries
+
+async function preprocessImage(imageBuffer: Buffer, mimeType: string) {
   try {
     const image = await Jimp.read(imageBuffer);
     image
@@ -18,27 +21,27 @@ async function preprocessImage(imageBuffer: Buffer) {
       .contrast(1); // Apply additional contrast for text clarity
 
     // Save preprocessed image for debugging
-    await image.writeAsync("preprocessed_image.png");
-    console.log("Preprocessed image saved as 'preprocessed_image.png'");
+    const preprocessedImagePath = `preprocessed_image.${mimeType.split("/")[1]}`;
+    await image.writeAsync(preprocessedImagePath);
+    console.log(`Preprocessed image saved as '${preprocessedImagePath}'`);
 
-    return image.getBufferAsync(Jimp.MIME_PNG); // Return as PNG
+    return image.getBufferAsync(mimeType); // Return as the original MIME type
   } catch (error) {
     console.error("Error preprocessing image:", error);
     throw error;
   }
 }
 
-async function solveCaptcha(captchaImageBuffer: Buffer) {
+async function solveCaptcha(captchaImageBuffer: Buffer, mimeType: string) {
   try {
     // Preprocess the CAPTCHA image
-    const preprocessedImageBuffer = await preprocessImage(captchaImageBuffer);
-
-    // Convert buffer to base64 string
-    const base64Image = preprocessedImageBuffer.toString("base64");
-    const captchaImageUrl = `data:image/png;base64,${base64Image}`;
+    const preprocessedImageBuffer = await preprocessImage(
+      captchaImageBuffer,
+      mimeType
+    );
 
     return new Promise((resolve, reject) => {
-      Tesseract.recognize(captchaImageUrl, "eng", {
+      Tesseract.recognize(preprocessedImageBuffer, "eng", {
         logger: (info: any) => console.log(info), // Optional: Log progress
         tessedit_char_whitelist: "0123456789", // Limit Tesseract to recognize only numbers
         oem: 1, // Use LSTM OCR Engine
@@ -59,59 +62,52 @@ async function solveCaptcha(captchaImageBuffer: Buffer) {
   }
 }
 
-(async () => {
-  const browser = await puppeteer.launch({ headless: false });
-  const page = await browser.newPage();
-
-  // Go to login page
-  await page.goto("https://blsitalypakistan.com/account/login");
-
-  // Selectors based on the HTML structure provided
-  const emailSelector = 'input[placeholder="Enter Email"]';
-  const passwordSelector = 'input[name="login_password"]';
-  const captchaSelector = "#captcha_code_reg"; // Updated selector for CAPTCHA input
-  const loginButtonSelector = 'button[name="submitLogin"]';
-
-  // Login
-  await page.waitForSelector(captchaSelector, {
-    visible: true,
-    timeout: 60000,
-  }); // Increase timeout to 60 seconds
-  await page.type(emailSelector, "shahzaibalam127@gmail.com");
-
-  await page.waitForSelector(captchaSelector, {
-    visible: true,
-    timeout: 60000,
-  }); // Increase timeout to 60 seconds
-  await page.type(passwordSelector, "shahzaib000");
-
-  // Handle CAPTCHA
+async function loginWithRetries(page: any, retries: number) {
   try {
+    const emailSelector = 'input[placeholder="Enter Email"]';
+    const passwordSelector = 'input[name="login_password"]';
+    const captchaSelector = "#captcha_code_reg"; // Updated selector for CAPTCHA input
+    const loginButtonSelector = 'button[name="submitLogin"]';
+
+    // Login
+    await page.waitForSelector(captchaSelector, {
+      visible: true,
+      timeout: 60000,
+    }); // Increase timeout to 60 seconds
+    await page.type(emailSelector, "shahzaibalam127@gmail.com");
+
+    await page.waitForSelector(captchaSelector, {
+      visible: true,
+      timeout: 60000,
+    }); // Increase timeout to 60 seconds
+    await page.type(passwordSelector, "shahzaib000");
+
+    // Handle CAPTCHA
     await page.waitForSelector("#Imageid"); // Wait for CAPTCHA image to load
-    const captchaImageSrc = await page.evaluate(() => {
-      const captchaElement = document.querySelector("#Imageid");
-      return captchaElement instanceof HTMLImageElement
-        ? captchaElement.src
-        : "";
-    });
 
-    if (!captchaImageSrc) {
-      throw new Error("CAPTCHA image source not found.");
-    }
-    console.log(`CAPTCHA Image URL: ${captchaImageSrc}`);
+    // Get CAPTCHA image URL
+    const captchaImageUrl = await page.$eval(
+      "#Imageid",
+      (img: { src: any }) => img.src
+    );
 
-    // Download CAPTCHA image
-    const response = await page.goto(captchaImageSrc, {
-      waitUntil: "networkidle0",
+    console.log(`CAPTCHA Image URL: ${captchaImageUrl}`); // Log URL for debugging
+
+    // Fetch the CAPTCHA image from URL
+    const response = await axios({
+      url: captchaImageUrl,
+      responseType: "arraybuffer", // Get the response as a buffer
     });
-    const captchaImageBuffer = await response.buffer();
+    const captchaImageBuffer = Buffer.from(response.data);
 
     // Debug: Save CAPTCHA image for inspection
-    fs.writeFileSync("captcha_image.png", captchaImageBuffer);
-    console.log("CAPTCHA image saved as 'captcha_image.png'");
+    const mimeType = response.headers["content-type"];
+    const captchaImagePath = `captcha_image.${mimeType.split("/")[1]}`;
+    fs.writeFileSync(captchaImagePath, captchaImageBuffer);
+    console.log(`CAPTCHA image saved as '${captchaImagePath}'`);
 
     // Solve CAPTCHA
-    const code = await solveCaptcha(captchaImageBuffer);
+    const code = await solveCaptcha(captchaImageBuffer, mimeType);
 
     // Debug: Ensure CAPTCHA code is correct
     console.log(`CAPTCHA Code to Enter: '${code}'`);
@@ -126,19 +122,39 @@ async function solveCaptcha(captchaImageBuffer: Buffer) {
     console.log(`Entered CAPTCHA code: ${code}`);
 
     // Click the login button
-    await page.waitForSelector(captchaSelector, {
+    await page.waitForSelector(loginButtonSelector, {
       visible: true,
       timeout: 60000,
     }); // Increase timeout to 60 seconds
     await page.click(loginButtonSelector);
     await page.waitForNavigation();
 
-    // Rest of your automation logic goes here
-    // ...
+    console.log("Login successful.");
   } catch (error) {
-    console.error("Error during CAPTCHA handling:", error);
+    console.error("Error during CAPTCHA handling or login:", error);
+    if (retries > 0) {
+      console.log(`Retrying... (${MAX_RETRIES - retries + 1}/${MAX_RETRIES})`);
+      await page.reload(); // Reload the page and retry
+      await loginWithRetries(page, retries - 1); // Recursive call with decremented retries
+    } else {
+      console.error("Maximum retries reached. Login failed.");
+      throw error;
+    }
   }
+}
 
-  // Close the browser
-  await browser.close();
+(async () => {
+  const browser = await puppeteer.launch({ headless: false });
+  const page = await browser.newPage();
+
+  // Go to login page
+  await page.goto("https://blsitalypakistan.com/account/login");
+
+  // Attempt login with retries
+  await loginWithRetries(page, MAX_RETRIES);
+
+  // Do not close the browser automatically
+  console.log(
+    "Automation completed. The browser will remain open for inspection."
+  );
 })();
