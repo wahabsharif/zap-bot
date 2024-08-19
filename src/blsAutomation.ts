@@ -5,6 +5,10 @@ const fs = require("fs");
 const axios = require("axios"); // Add axios to handle HTTP requests
 
 const MAX_RETRIES = 5; // Maximum number of retries
+const emailSelector = 'input[placeholder="Enter Email"]';
+const passwordSelector = 'input[name="login_password"]';
+const captchaSelector = "#captcha_code_reg";
+const loginButtonSelector = 'button[name="submitLogin"]';
 
 async function preprocessImage(imageBuffer: Buffer, mimeType: string) {
   try {
@@ -34,108 +38,96 @@ async function preprocessImage(imageBuffer: Buffer, mimeType: string) {
 
 async function solveCaptcha(captchaImageBuffer: Buffer, mimeType: string) {
   try {
-    // Preprocess the CAPTCHA image
     const preprocessedImageBuffer = await preprocessImage(
       captchaImageBuffer,
       mimeType
     );
+    console.log("Preprocessed image for CAPTCHA OCR.");
 
-    return new Promise((resolve, reject) => {
-      Tesseract.recognize(preprocessedImageBuffer, "eng", {
-        logger: (info: any) => console.log(info), // Optional: Log progress
-        tessedit_char_whitelist: "0123456789", // Limit Tesseract to recognize only numbers
-        oem: 1, // Use LSTM OCR Engine
-        psm: 6, // Assume a single uniform block of text
-      })
-        .then(({ data: { text } }: { data: { text: string } }) => {
-          console.log(`CAPTCHA Solution: '${text}'`);
-          resolve(text.trim());
-        })
-        .catch((error: any) => {
-          console.error("Error solving CAPTCHA with OCR:", error);
-          reject(error);
-        });
+    const result = await Tesseract.recognize(preprocessedImageBuffer, "eng", {
+      logger: (info: any) => console.log(info),
+      tessedit_char_whitelist: "0123456789",
+      oem: 1,
+      psm: 6,
     });
+
+    console.log(`CAPTCHA Solution: '${result.data.text.trim()}'`);
+    return result.data.text.trim();
   } catch (error) {
-    console.error("Error solving CAPTCHA:", error);
+    console.error("Error solving CAPTCHA with OCR:", error);
     throw error;
   }
 }
 
 async function loginWithRetries(page: any, retries: number) {
   try {
-    const emailSelector = 'input[placeholder="Enter Email"]';
-    const passwordSelector = 'input[name="login_password"]';
-    const captchaSelector = "#captcha_code_reg"; // Updated selector for CAPTCHA input
-    const loginButtonSelector = 'button[name="submitLogin"]';
-
-    // Login
-    await page.waitForSelector(captchaSelector, {
+    console.log("Waiting for email input...");
+    await page.waitForSelector(emailSelector, {
       visible: true,
       timeout: 60000,
-    }); // Increase timeout to 60 seconds
+    });
+    console.log("Email input found. Typing email...");
     await page.type(emailSelector, "shahzaibalam127@gmail.com");
 
-    await page.waitForSelector(captchaSelector, {
+    console.log("Waiting for password input...");
+    await page.waitForSelector(passwordSelector, {
       visible: true,
       timeout: 60000,
-    }); // Increase timeout to 60 seconds
+    });
+    console.log("Password input found. Typing password...");
     await page.type(passwordSelector, "shahzaib000");
 
-    // Handle CAPTCHA
-    await page.waitForSelector("#Imageid"); // Wait for CAPTCHA image to load
-
-    // Get CAPTCHA image URL
+    console.log("Waiting for CAPTCHA image...");
+    await page.waitForSelector("#Imageid", { visible: true, timeout: 60000 });
+    console.log("CAPTCHA image found. Fetching CAPTCHA image URL...");
     const captchaImageUrl = await page.$eval(
       "#Imageid",
       (img: { src: any }) => img.src
     );
+    console.log(`CAPTCHA Image URL: ${captchaImageUrl}`);
 
-    console.log(`CAPTCHA Image URL: ${captchaImageUrl}`); // Log URL for debugging
-
-    // Fetch the CAPTCHA image from URL
+    console.log("Fetching CAPTCHA image...");
     const response = await axios({
       url: captchaImageUrl,
-      responseType: "arraybuffer", // Get the response as a buffer
+      responseType: "arraybuffer",
     });
     const captchaImageBuffer = Buffer.from(response.data);
-
-    // Debug: Save CAPTCHA image for inspection
     const mimeType = response.headers["content-type"];
     const captchaImagePath = `captcha_image.${mimeType.split("/")[1]}`;
     fs.writeFileSync(captchaImagePath, captchaImageBuffer);
     console.log(`CAPTCHA image saved as '${captchaImagePath}'`);
 
-    // Solve CAPTCHA
+    console.log("Solving CAPTCHA...");
     const code = await solveCaptcha(captchaImageBuffer, mimeType);
-
-    // Debug: Ensure CAPTCHA code is correct
     console.log(`CAPTCHA Code to Enter: '${code}'`);
 
-    // Ensure CAPTCHA input field is visible and focused
+    console.log("Waiting for CAPTCHA input...");
     await page.waitForSelector(captchaSelector, {
       visible: true,
       timeout: 60000,
-    }); // Increase timeout to 60 seconds
+    });
+    console.log("CAPTCHA input found. Typing CAPTCHA code...");
     await page.focus(captchaSelector);
     await page.type(captchaSelector, code);
-    console.log(`Entered CAPTCHA code: ${code}`);
 
-    // Click the login button
+    console.log("Waiting for login button...");
     await page.waitForSelector(loginButtonSelector, {
       visible: true,
       timeout: 60000,
-    }); // Increase timeout to 60 seconds
+    });
+    console.log("Login button found. Clicking login...");
     await page.click(loginButtonSelector);
-    await page.waitForNavigation();
+
+    console.log("Waiting for navigation...");
+    await page.waitForNavigation({ waitUntil: "networkidle0" });
 
     console.log("Login successful.");
   } catch (error) {
     console.error("Error during CAPTCHA handling or login:", error);
     if (retries > 0) {
       console.log(`Retrying... (${MAX_RETRIES - retries + 1}/${MAX_RETRIES})`);
-      await page.reload(); // Reload the page and retry
-      await loginWithRetries(page, retries - 1); // Recursive call with decremented retries
+      await page.reload({ waitUntil: "networkidle0" });
+      await loginWithRetries(page, retries - 1);
     } else {
       console.error("Maximum retries reached. Login failed.");
       throw error;
